@@ -77,14 +77,7 @@ def _module_dir() -> str:
 
 
 def _user_scripts_dir() -> str | None:
-    if sys.version_info >= (3, 10):
-        scheme = sysconfig.get_preferred_scheme("user")
-    elif os.name == "nt":
-        scheme = "nt_user"
-    elif sys.platform == "darwin" and getattr(sys, "_framework", None):
-        scheme = "osx_framework_user"
-    else:
-        scheme = "posix_user"
+    scheme = sysconfig.get_preferred_scheme("user")
     try:
         return sysconfig.get_path("scripts", scheme=scheme)
     except KeyError:
@@ -98,7 +91,7 @@ def _strip_suffix(path: str, pattern: str) -> str | None:
     if len(parts) <= len(pattern_parts):
         return None
     tail = parts[-len(pattern_parts) :]
-    if not all(fnmatch(part, want) for part, want in zip(tail, pattern_parts)):
+    if not all(fnmatch(part, want) for part, want in zip(tail, pattern_parts, strict=True)):
         return None
     return os.sep.join(parts[: -len(pattern_parts)])
 

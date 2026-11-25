@@ -33,7 +33,7 @@ jobs:
           do
             echo "== $plat"
             python -m pip download --quiet --no-index --find-links dist --only-binary=:all: \
-              --platform "$plat" --python-version 3.9 --dest "check/$plat" esbuild-bin
+              --platform "$plat" --python-version 3.11 --dest "check/$plat" esbuild-bin
             ls "check/$plat"
           done
 

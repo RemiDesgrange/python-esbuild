@@ -7,7 +7,7 @@ pip install "esbuild-bin>=0.28,<0.29"
 esbuild --version
 ```
 
-After installing, any Python project has a working `esbuild`: no Node.js, no npm, no compiler, and no downloads at install or run time. It works with Django, Flask, FastAPI, MkDocs, Sphinx or a plain CI script.
+Requires Python 3.11 or newer. After installing, any Python project has a working `esbuild`: no Node.js, no npm, no compiler, and no downloads at install or run time. It works with Django, Flask, FastAPI, MkDocs, Sphinx or a plain CI script.
 
 > **Unofficial.** This is an independent repackaging. It is not affiliated with or endorsed by the esbuild project. The binary inside each wheel is byte-for-byte the one esbuild publishes to npm. Report esbuild bugs [upstream](https://github.com/evanw/esbuild/issues), and packaging bugs [here](https://github.com/RemiDesgrange/python-esbuild/issues).
 

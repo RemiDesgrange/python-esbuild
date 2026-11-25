@@ -4,7 +4,7 @@ import base64
 import csv
 import hashlib
 import io
-import sys
+import tomllib
 import zipfile
 from collections.abc import Sequence
 from pathlib import Path
@@ -211,7 +211,7 @@ def test_build_is_reproducible(tmp_path: Path) -> None:
     first = run_build(tmp_path / "a")
     second = run_build(tmp_path / "b")
     assert [w.name for w in first] == [w.name for w in second]
-    for a, b in zip(first, second):
+    for a, b in zip(first, second, strict=True):
         assert hashlib.sha256(a.read_bytes()).digest() == hashlib.sha256(b.read_bytes()).digest()
 
 
@@ -270,10 +270,7 @@ def test_build_refuses_mismatched_versions(tmp_path: Path) -> None:
         build(tmp_path, esbuild_version="9.9.9", fetch=registry_for("9.9.9", []), epoch=EPOCH)
 
 
-@pytest.mark.skipif(sys.version_info < (3, 11), reason="needs tomllib")
 def test_wheel_metadata_matches_pyproject() -> None:
-    import tomllib  # type: ignore[import-not-found,unused-ignore]
-
     project = tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]
     assert project["name"] == DIST_NAME
     assert project["description"] == SUMMARY

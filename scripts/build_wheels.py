@@ -51,7 +51,7 @@ SUMMARY = (
     "The official esbuild binary, repackaged as Python wheels. "
     "Unofficial; not affiliated with the esbuild project."
 )
-REQUIRES_PYTHON = ">=3.9"
+REQUIRES_PYTHON = ">=3.11"
 LICENSE_EXPRESSION = "MIT"
 PROJECT_URLS = (
     ("Homepage", "https://github.com/RemiDesgrange/python-esbuild"),
