@@ -1,0 +1,57 @@
+[project]
+name = "esbuild-bin"
+dynamic = ["version"]
+description = "The official esbuild binary, repackaged as Python wheels. Unofficial; not affiliated with the esbuild project."
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+dependencies = []
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Build Tools",
+]
+
+[project.urls]
+Homepage = "https://github.com/RemiDesgrange/python-esbuild"
+Upstream = "https://github.com/evanw/esbuild"
+Changelog = "https://github.com/evanw/esbuild/blob/main/CHANGELOG.md"
+
+[dependency-groups]
+dev = [
+    "mypy>=1.13",
+    "pytest>=8",
+    "ruff>=0.8",
+    "wheel>=0.45",
+]
+
+# Wheels are produced by scripts/build_wheels.py, not by a PEP 517 backend.
+[tool.uv]
+package = false
+
+[tool.ruff]
+target-version = "py39"
+line-length = 100
+extend-exclude = ["docs"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S", "PT", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "S603", "S607"]
+"scripts/**" = ["S603", "S607"]
+"src/**" = ["S603"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "scripts"]
+addopts = "-ra"
+
+[tool.mypy]
+strict = true
+# mypy no longer accepts a 3.9 target; 3.9 compatibility is covered by running pytest on 3.9 in CI.
+python_version = "3.10"
+files = ["src", "scripts", "tests"]
+mypy_path = ["src", "scripts"]
+explicit_package_bases = true
