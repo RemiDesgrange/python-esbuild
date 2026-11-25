@@ -1,6 +1,7 @@
 name: Release
 
-# A release is a pushed tag v<esbuild version> or v<esbuild version>.postN.
+# A release is a pushed tag v<esbuild version>, e.g. v0.28.2. The wheel version
+# is exactly the esbuild version; there are no .postN releases.
 # Flow: check tag, build, test the wheels on every tier 1 runner, publish to
 # TestPyPI, install from TestPyPI, publish to PyPI. Both publishes use trusted
 # publishing (OIDC) with PEP 740 attestations; there are no API tokens.
@@ -28,22 +29,14 @@ jobs:
         run: |
           set -eu
           pinned="$(tr -d '[:space:]' < ESBUILD_VERSION)"
-          if [[ "$TAG" =~ ^v([0-9]+\.[0-9]+\.[0-9]+)(\.post([0-9]+))?$ ]]; then
-            base="${BASH_REMATCH[1]}"; post="${BASH_REMATCH[3]}"
-          else
-            echo "::error::tag $TAG is not v<X.Y.Z> or v<X.Y.Z>.postN"; exit 1
+          if [ "$TAG" != "v$pinned" ]; then
+            echo "::error::tag $TAG does not match ESBUILD_VERSION (expected v$pinned)"; exit 1
           fi
-          if [ "$base" != "$pinned" ]; then
-            echo "::error::tag $TAG does not match ESBUILD_VERSION $pinned"; exit 1
-          fi
-          echo "post=$post" >> "$GITHUB_OUTPUT"
           echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
       - run: uv sync --locked
       - run: uv run pytest
       - name: Build wheels
-        env:
-          POST: ${{ steps.tag.outputs.post }}
-        run: uv run python scripts/build_wheels.py --out dist ${POST:+--post "$POST"}
+        run: uv run python scripts/build_wheels.py --out dist
       - run: (cd dist && sha256sum *)
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:

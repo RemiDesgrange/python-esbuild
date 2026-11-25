@@ -19,7 +19,7 @@ The wheel version is the esbuild version: `esbuild-bin==0.28.2` contains esbuild
 dependencies = ["esbuild-bin>=0.28,<0.29"]
 ```
 
-Every upstream release gets its own release here; none are skipped. Packaging-only fixes ship as `.postN` (for example `0.28.2.post1`) and never change the binary. Read the [esbuild changelog](https://github.com/evanw/esbuild/blob/main/CHANGELOG.md) before moving to a new minor.
+Every upstream release gets its own release here; none are skipped. There are no `.postN` releases: if a release has a packaging problem, it is yanked on PyPI and the fix ships with the next esbuild release. Read the [esbuild changelog](https://github.com/evanw/esbuild/blob/main/CHANGELOG.md) before moving to a new minor.
 
 ## Three ways to call it
 
@@ -82,7 +82,7 @@ The release pipeline is designed so that every step can be checked:
   git clone https://github.com/RemiDesgrange/python-esbuild && cd python-esbuild
   git checkout v0.28.2
   uv sync --locked
-  uv run python scripts/build_wheels.py --out dist   # add --post N for a vN.postM tag
+  uv run python scripts/build_wheels.py --out dist
   sha256sum dist/*.whl   # compare with the hashes shown on PyPI
   ```
 

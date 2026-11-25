@@ -306,10 +306,6 @@ def set_version(version: str, root: Path = ROOT) -> None:
     check_versions_match(version, root)
 
 
-def wheel_version(esbuild_version: str, post: int | None) -> str:
-    return esbuild_version if post is None else f"{esbuild_version}.post{post}"
-
-
 def source_date_epoch() -> int:
     value = os.environ.get("SOURCE_DATE_EPOCH")
     if value is None:
@@ -416,7 +412,6 @@ def build(
     *,
     esbuild_version: str,
     platforms: Sequence[Platform] = PLATFORMS,
-    post: int | None = None,
     fetch: Fetch = http_fetch,
     epoch: int | None = None,
     readme: str | None = None,
@@ -428,7 +423,7 @@ def build(
     if readme is None:
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
     check_versions_match(esbuild_version)
-    version = wheel_version(esbuild_version, post)
+    version = esbuild_version  # the wheel version is exactly the esbuild version
 
     log(f"esbuild {esbuild_version}: fetching license from the main package")
     license_text = extract_member(
@@ -469,7 +464,6 @@ def build(
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--out", type=Path, default=ROOT / "dist", help="output directory")
-    parser.add_argument("--post", type=int, help="packaging-only release number (.postN)")
     parser.add_argument(
         "--platform",
         action="append",
@@ -483,7 +477,6 @@ def main(argv: Sequence[str] | None = None) -> int:
             args.out,
             esbuild_version=read_pinned_version(),
             platforms=platforms,
-            post=args.post,
         )
     except BuildError as exc:
         print(f"build failed: {exc}", file=sys.stderr)

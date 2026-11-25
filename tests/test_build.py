@@ -25,7 +25,6 @@ from build_wheels import (
     platform_tag,
     read_pinned_version,
     set_version,
-    wheel_version,
 )
 from fakes import LICENSE, FakeRegistry, binary_for, elf, macho, pe, registry_for
 from platforms import BY_NPM_NAME, PLATFORMS, Platform
@@ -39,13 +38,11 @@ def run_build(
     *,
     platforms: Sequence[Platform] = PLATFORMS,
     fetch: Fetch | None = None,
-    post: int | None = None,
 ) -> list[Path]:
     return build(
         out,
         esbuild_version=VERSION,
         platforms=platforms,
-        post=post,
         fetch=fetch or registry_for(VERSION, list(platforms)),
         epoch=EPOCH,
         readme="# esbuild-bin\n",
@@ -199,14 +196,6 @@ def test_wheel_contents(tmp_path: Path, npm_name: str) -> None:
             assert int(size) == len(data)
 
 
-def test_post_release_changes_only_wheel_version(tmp_path: Path) -> None:
-    (wheel,) = run_build(tmp_path, platforms=[BY_NPM_NAME["linux-x64"]], post=1)
-    assert wheel.name.startswith(f"esbuild_bin-{VERSION}.post1-py3-none-")
-    with zipfile.ZipFile(wheel) as zf:
-        assert f'__version__ = "{VERSION}"' in zf.read("esbuild_bin/_version.py").decode()
-        assert f"esbuild_bin-{VERSION}.post1.data/scripts/esbuild" in zf.namelist()
-
-
 def test_build_is_reproducible(tmp_path: Path) -> None:
     first = run_build(tmp_path / "a")
     second = run_build(tmp_path / "b")
@@ -228,9 +217,7 @@ def test_build_ignores_ambient_source_date_epoch(
 # --------------------------------------------------------------------------- misc
 
 
-def test_version_helpers(tmp_path: Path) -> None:
-    assert wheel_version("0.28.2", None) == "0.28.2"
-    assert wheel_version("0.28.2", 3) == "0.28.2.post3"
+def test_read_pinned_version(tmp_path: Path) -> None:
     assert read_pinned_version() == (ROOT / "ESBUILD_VERSION").read_text().strip()
     bad = tmp_path / "ESBUILD_VERSION"
     bad.write_text("v0.28\n")
