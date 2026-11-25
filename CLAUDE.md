@@ -17,7 +17,7 @@ PyPI wheels that ship the official, unmodified esbuild binary from npm.
 - `ESBUILD_VERSION`: the single pinned upstream version.
 - `scripts/platforms.py`: the platform table, the single source of truth for npm names and wheel tags.
 - `scripts/build_wheels.py`: download, verify, inspect and write the wheels.
-- `src/esbuild_bin/`: the runtime package copied into every wheel. `_version.py` is overwritten at build time.
+- `src/esbuild_bin/`: the runtime package copied into every wheel. `_version.py` and `pyproject.toml` repeat `ESBUILD_VERSION`; the build refuses to run if they differ (`check_upstream.py --write` updates all three, then run `uv lock`).
 
 ## Guardrails for Claude Code
 

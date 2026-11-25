@@ -5,7 +5,7 @@ from pathlib import Path
 
 import check_upstream
 import pytest
-from build_wheels import ROOT, read_pinned_version
+from build_wheels import ROOT, check_versions_match, read_pinned_version
 from check_upstream import changelog_url, main, next_release
 
 
@@ -33,6 +33,9 @@ def test_main_writes_outputs(
     }
     output = tmp_path / "out"
     monkeypatch.setenv("GITHUB_OUTPUT", str(output))
+    for rel in ("ESBUILD_VERSION", "pyproject.toml", "src/esbuild_bin/_version.py"):
+        (tmp_path / rel).parent.mkdir(parents=True, exist_ok=True)
+        (tmp_path / rel).write_text((ROOT / rel).read_text())
     monkeypatch.setattr(check_upstream, "ROOT", tmp_path)  # --write must not touch the repo
     monkeypatch.setattr(
         check_upstream, "read_pinned_version", lambda: read_pinned_version(ROOT / "ESBUILD_VERSION")
@@ -41,4 +44,7 @@ def test_main_writes_outputs(
     assert main(["--write"], fetch=lambda _url: json.dumps(packument).encode()) == 0
     assert capsys.readouterr().out.strip() == upcoming
     assert (tmp_path / "ESBUILD_VERSION").read_text() == upcoming + "\n"
+    assert f'version = "{upcoming}"' in (tmp_path / "pyproject.toml").read_text()
+    assert f'__version__ = "{upcoming}"' in (tmp_path / "src/esbuild_bin/_version.py").read_text()
     assert f"version={upcoming}\n" in output.read_text()
+    check_versions_match(upcoming, tmp_path)

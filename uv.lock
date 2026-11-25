@@ -82,6 +82,7 @@ wheels = [
 
 [[package]]
 name = "esbuild-bin"
+version = "0.28.2"
 source = { virtual = "." }
 
 [package.dev-dependencies]

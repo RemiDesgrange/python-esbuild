@@ -19,16 +19,18 @@ from build_wheels import (
     BuildError,
     Fetch,
     build,
+    check_versions_match,
     inspect_binary,
     parse_integrity,
     platform_tag,
     read_pinned_version,
+    set_version,
     wheel_version,
 )
 from fakes import LICENSE, FakeRegistry, binary_for, elf, macho, pe, registry_for
 from platforms import BY_NPM_NAME, PLATFORMS, Platform
 
-VERSION = "0.28.2"
+VERSION = read_pinned_version()
 EPOCH = 1764000000
 
 
@@ -236,6 +238,38 @@ def test_version_helpers(tmp_path: Path) -> None:
         read_pinned_version(bad)
 
 
+def test_repo_versions_match_esbuild_version() -> None:
+    check_versions_match(read_pinned_version())
+
+
+def copy_version_files(dest: Path) -> None:
+    for rel in ("ESBUILD_VERSION", "pyproject.toml", "src/esbuild_bin/_version.py"):
+        (dest / rel).parent.mkdir(parents=True, exist_ok=True)
+        (dest / rel).write_text((ROOT / rel).read_text())
+
+
+def test_version_mismatch_is_detected(tmp_path: Path) -> None:
+    copy_version_files(tmp_path)
+    version_py = tmp_path / "src/esbuild_bin/_version.py"
+    version_py.write_text(version_py.read_text().replace(VERSION, "0.0.1"))
+    with pytest.raises(BuildError, match=r"_version\.py declares '0\.0\.1'"):
+        check_versions_match(VERSION, tmp_path)
+
+
+def test_set_version_updates_every_declaration(tmp_path: Path) -> None:
+    copy_version_files(tmp_path)
+    set_version("1.2.3", tmp_path)
+    assert read_pinned_version(tmp_path / "ESBUILD_VERSION") == "1.2.3"
+    check_versions_match("1.2.3", tmp_path)
+    pyproject = (tmp_path / "pyproject.toml").read_text()
+    assert pyproject.count("1.2.3") == 1  # only the project version, nothing else rewritten
+
+
+def test_build_refuses_mismatched_versions(tmp_path: Path) -> None:
+    with pytest.raises(BuildError, match="must match ESBUILD_VERSION"):
+        build(tmp_path, esbuild_version="9.9.9", fetch=registry_for("9.9.9", []), epoch=EPOCH)
+
+
 @pytest.mark.skipif(sys.version_info < (3, 11), reason="needs tomllib")
 def test_wheel_metadata_matches_pyproject() -> None:
     import tomllib  # type: ignore[import-not-found,unused-ignore]
@@ -245,3 +279,4 @@ def test_wheel_metadata_matches_pyproject() -> None:
     assert project["description"] == SUMMARY
     assert project["requires-python"] == REQUIRES_PYTHON
     assert project["license"] == LICENSE_EXPRESSION
+    assert project["version"] == read_pinned_version()

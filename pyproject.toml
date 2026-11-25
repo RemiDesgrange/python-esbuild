@@ -1,6 +1,7 @@
 [project]
 name = "esbuild-bin"
-dynamic = ["version"]
+# Must equal ESBUILD_VERSION (checked by the build and the tests).
+version = "0.28.2"
 description = "The official esbuild binary, repackaged as Python wheels. Unofficial; not affiliated with the esbuild project."
 readme = "README.md"
 requires-python = ">=3.9"

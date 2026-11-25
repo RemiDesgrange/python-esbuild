@@ -5,8 +5,8 @@ oldest of them, so every upstream version gets its own release here. Pre-release
 are ignored.
 
 Prints the next version (or nothing). With ``--write`` it also updates
-ESBUILD_VERSION. In GitHub Actions it sets the ``version``, ``latest`` and
-``changelog`` step outputs.
+ESBUILD_VERSION, pyproject.toml and ``__version__`` (run ``uv lock`` afterwards).
+In GitHub Actions it sets the ``version``, ``latest`` and ``changelog`` step outputs.
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ import re
 import sys
 from collections.abc import Iterable, Sequence
 
-from build_wheels import REGISTRY, ROOT, Fetch, http_fetch, read_pinned_version
+from build_wheels import REGISTRY, ROOT, Fetch, http_fetch, read_pinned_version, set_version
 
 CHANGELOG = "https://github.com/evanw/esbuild/blob/main/CHANGELOG.md"
 RELEASE = re.compile(r"(\d+)\.(\d+)\.(\d+)")
@@ -51,7 +51,9 @@ def published_versions(fetch: Fetch) -> tuple[list[str], str]:
 
 def main(argv: Sequence[str] | None = None, fetch: Fetch = http_fetch) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--write", action="store_true", help="update ESBUILD_VERSION")
+    parser.add_argument(
+        "--write", action="store_true", help="update ESBUILD_VERSION and every version declaration"
+    )
     args = parser.parse_args(argv)
 
     current = read_pinned_version()
@@ -63,7 +65,7 @@ def main(argv: Sequence[str] | None = None, fetch: Fetch = http_fetch) -> int:
         print(f"esbuild {current} -> {upcoming} (npm latest: {latest})", file=sys.stderr)
         print(upcoming)
         if args.write:
-            (ROOT / "ESBUILD_VERSION").write_text(upcoming + "\n", encoding="utf-8")
+            set_version(upcoming, ROOT)
 
     output = os.environ.get("GITHUB_OUTPUT")
     if output:
