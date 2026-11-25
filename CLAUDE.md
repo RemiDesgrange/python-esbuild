@@ -10,7 +10,7 @@ PyPI wheels that ship the official, unmodified esbuild binary from npm.
 - `uv run pytest`: offline tests (fake npm registry, locator).
 - `uv run python scripts/build_wheels.py --out dist/`: real build. Downloads from npm and writes one wheel per platform.
 - `ESBUILD_BIN_INSTALLED_TEST=1 python -m pytest tests/test_installed.py`: run in an env where a built wheel is installed.
-- `uv run --python 3.9 pytest`: check that the code still runs on the minimum supported Python.
+- `uv run --isolated --python 3.9 pytest`: check that the code still runs on the minimum supported Python.
 
 ## Layout
 
